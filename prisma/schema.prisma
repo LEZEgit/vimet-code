@@ -1,8 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
   provider = "prisma-client"
   output   = "../generated/prisma"
@@ -10,4 +5,58 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+}
+
+model User {
+  id        String     @id @default(uuid()) @db.Uuid
+  name      String?    @db.VarChar(255)
+  email     String     @unique @db.VarChar(255)
+  image     String?    @db.Text
+  folders   Folder[]
+  notes     Note[]
+  noteLinks NoteLink[]
+
+  @@map("users")
+}
+
+model Folder {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  name      String   @db.VarChar(255)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  notes     Note[]
+
+  @@map("folders")
+}
+
+model Note {
+  id          String     @id @default(uuid()) @db.Uuid
+  userId      String     @map("user_id") @db.Uuid
+  folderId    String?    @map("folder_id") @db.Uuid
+  title       String     @default("Untitled Note") @db.VarChar(255)
+  content     Json       @default(dbgenerated("'[]'::jsonb"))
+  createdAt   DateTime   @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime   @updatedAt @map("updated_at") @db.Timestamptz(6)
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  folder      Folder?    @relation(fields: [folderId], references: [id], onDelete: SetNull)
+  sourceLinks NoteLink[] @relation("SourceNote")
+  targetLinks NoteLink[] @relation("TargetNote")
+
+  @@map("notes")
+}
+
+model NoteLink {
+  id            String   @id @default(uuid()) @db.Uuid
+  userId        String   @map("user_id") @db.Uuid
+  sourceNoteId  String   @map("source_note_id") @db.Uuid
+  targetNoteId  String   @map("target_note_id") @db.Uuid
+  sourceBlockId String?  @map("source_block_id") @db.VarChar(255)
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sourceNote    Note     @relation("SourceNote", fields: [sourceNoteId], references: [id], onDelete: Cascade)
+  targetNote    Note     @relation("TargetNote", fields: [targetNoteId], references: [id], onDelete: Cascade)
+
+  @@unique([sourceNoteId, targetNoteId, sourceBlockId], name: "unique_link")
+  @@map("note_links")
 }
