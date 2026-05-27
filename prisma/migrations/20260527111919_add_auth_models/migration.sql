@@ -1,6 +1,6 @@
 -- CreateTable
 CREATE TABLE "users" (
-    "id" UUID NOT NULL,
+    "id" TEXT NOT NULL,
     "name" VARCHAR(255) NOT NULL,
     "email" VARCHAR(255) NOT NULL,
     "emailVerified" BOOLEAN NOT NULL DEFAULT false,
@@ -20,7 +20,7 @@ CREATE TABLE "sessions" (
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "ipAddress" TEXT,
     "userAgent" TEXT,
-    "userId" UUID NOT NULL,
+    "userId" TEXT NOT NULL,
 
     CONSTRAINT "sessions_pkey" PRIMARY KEY ("id")
 );
@@ -30,7 +30,7 @@ CREATE TABLE "accounts" (
     "id" TEXT NOT NULL,
     "accountId" TEXT NOT NULL,
     "providerId" TEXT NOT NULL,
-    "userId" UUID NOT NULL,
+    "userId" TEXT NOT NULL,
     "accessToken" TEXT,
     "refreshToken" TEXT,
     "idToken" TEXT,
@@ -59,7 +59,7 @@ CREATE TABLE "verifications" (
 -- CreateTable
 CREATE TABLE "folders" (
     "id" UUID NOT NULL,
-    "userId" UUID NOT NULL,
+    "userId" TEXT NOT NULL,
     "name" VARCHAR(255) NOT NULL,
     "createdAt" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
@@ -69,7 +69,7 @@ CREATE TABLE "folders" (
 -- CreateTable
 CREATE TABLE "notes" (
     "id" UUID NOT NULL,
-    "userId" UUID NOT NULL,
+    "userId" TEXT NOT NULL,
     "folderId" UUID,
     "title" VARCHAR(255) NOT NULL DEFAULT 'Untitled Note',
     "content" JSONB NOT NULL DEFAULT '[]'::jsonb,
@@ -82,7 +82,7 @@ CREATE TABLE "notes" (
 -- CreateTable
 CREATE TABLE "note_links" (
     "id" UUID NOT NULL,
-    "user_id" UUID NOT NULL,
+    "user_id" TEXT NOT NULL,
     "source_note_id" UUID NOT NULL,
     "target_note_id" UUID NOT NULL,
     "source_block_id" VARCHAR(255),
