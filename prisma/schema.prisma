@@ -10,7 +10,7 @@ datasource db {
 
 
 model User {
-  id            String    @id @default(uuid()) @db.Uuid
+  id            String    @id @default(uuid())
   name          String    @db.VarChar(255)
   email         String    @unique @db.VarChar(255)
   emailVerified Boolean   @default(false)
@@ -37,7 +37,7 @@ model Session {
   updatedAt DateTime @updatedAt
   ipAddress String?
   userAgent String?
-  userId    String   @db.Uuid
+  userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([token])
@@ -49,7 +49,7 @@ model Account {
   id                    String    @id
   accountId             String
   providerId            String
-  userId                String    @db.Uuid
+  userId                String
   user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   accessToken           String?
   refreshToken          String?
@@ -79,7 +79,7 @@ model Verification {
 
 model Folder {
   id              String   @id @default(uuid()) @db.Uuid
-  userId          String   @db.Uuid
+  userId          String
   name            String   @db.VarChar(255)
   createdAt       DateTime @default(now()) @db.Timestamptz(6)
   user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -96,7 +96,7 @@ model Folder {
 
 model Note {
   id          String     @id @default(uuid()) @db.Uuid
-  userId      String     @db.Uuid
+  userId      String
   folderId    String?    @db.Uuid
   title       String     @default("Untitled Note") @db.VarChar(255)
   content     Json       @default(dbgenerated("'[]'::jsonb"))
@@ -112,7 +112,7 @@ model Note {
 
 model NoteLink {
   id            String   @id @default(uuid()) @db.Uuid
-  userId        String   @map("user_id") @db.Uuid
+  userId        String   @map("user_id")
   sourceNoteId  String   @map("source_note_id") @db.Uuid
   targetNoteId  String   @map("target_note_id") @db.Uuid
   sourceBlockId String?  @map("source_block_id") @db.VarChar(255)
