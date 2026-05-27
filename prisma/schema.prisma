@@ -1,3 +1,4 @@
+
 generator client {
   provider = "prisma-client"
   output   = "../generated/prisma"
@@ -7,37 +8,100 @@ datasource db {
   provider = "postgresql"
 }
 
+
 model User {
-  id        String     @id @default(uuid()) @db.Uuid
-  name      String?    @db.VarChar(255)
-  email     String     @unique @db.VarChar(255)
-  image     String?    @db.Text
+  id            String    @id @default(uuid()) @db.Uuid
+  name          String    @db.VarChar(255)
+  email         String    @unique @db.VarChar(255)
+  emailVerified Boolean   @default(false)
+  image         String?   @db.Text
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  sessions      Session[]
+  accounts      Account[]
   folders   Folder[]
   notes     Note[]
   noteLinks NoteLink[]
 
+  // @@map("users")
+
+  // @@unique([email])
   @@map("users")
 }
 
-model Folder {
-  id        String   @id @default(uuid()) @db.Uuid
-  userId    String   @map("user_id") @db.Uuid
-  name      String   @db.VarChar(255)
-  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String   @db.Uuid
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  notes     Note[]
+
+  @@unique([token])
+  @@index([userId])
+  @@map("sessions")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String    @db.Uuid
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([userId])
+  @@map("accounts")
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+  @@map("verifications")
+}
+
+model Folder {
+  id              String   @id @default(uuid()) @db.Uuid
+  userId          String   @db.Uuid
+  name            String   @db.VarChar(255)
+  createdAt       DateTime @default(now()) @db.Timestamptz(6)
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  notes           Note[]
+  isRoot          Boolean  @default(false)
+  
+  // Self-relation for Subfolders (Self-referencing)
+  parentId       String?  @db.Uuid // Nullable because root folders have no parent
+  parent         Folder?  @relation("FolderToFolder", fields: [parentId], references: [id], onDelete: Cascade)
+  subfolders     Folder[] @relation("FolderToFolder") // Virtual: lists direct subfolders   
 
   @@map("folders")
 }
 
 model Note {
   id          String     @id @default(uuid()) @db.Uuid
-  userId      String     @map("user_id") @db.Uuid
-  folderId    String?    @map("folder_id") @db.Uuid
+  userId      String     @db.Uuid
+  folderId    String?    @db.Uuid
   title       String     @default("Untitled Note") @db.VarChar(255)
   content     Json       @default(dbgenerated("'[]'::jsonb"))
-  createdAt   DateTime   @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt   DateTime   @updatedAt @map("updated_at") @db.Timestamptz(6)
+  createdAt   DateTime   @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime   @updatedAt @db.Timestamptz(6)
   user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   folder      Folder?    @relation(fields: [folderId], references: [id], onDelete: SetNull)
   sourceLinks NoteLink[] @relation("SourceNote")
@@ -60,3 +124,5 @@ model NoteLink {
   @@unique([sourceNoteId, targetNoteId, sourceBlockId], name: "unique_link")
   @@map("note_links")
 }
+
+
