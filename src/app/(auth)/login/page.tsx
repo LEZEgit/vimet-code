@@ -2,6 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SignInTab } from "./_components/sign-in-tab";
 import { SignUpTab } from "./_components/sign-up-tab";
+import { Separator } from "@/components/ui/separator";
 
 export default function SigninPage() {
   return (
@@ -22,6 +23,9 @@ export default function SigninPage() {
             {/* Sign In form */}
             <SignInTab />
           </CardContent>
+
+          <Separator />
+          
         </Card>
       </TabsContent>
       <TabsContent value="signup">

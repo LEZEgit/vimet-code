@@ -1,18 +1,21 @@
-"use client";
+import { redirect } from "next/navigation";
+import { auth } from "@/lib/auth";
+import util from "util";
 
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
+export default async function Home() {
+  const session = await auth.api.getSession({
+    headers: await (await import("next/headers")).headers(),
+  });
 
-export default function Home() {
-  return (
-    <main className="flex items-center justify-center h-screen bg-neutral-950 text-white">
-      <div className="flex gap-4">
-        <Button asChild size="lg" className="font-semibold text-xl">
-          <Link href="/login" >
-            Sign In/Sign Up
-          </Link>
-        </Button>
-      </div>
-    </main>
-  );
+  const delay = (ms: number | undefined) => new Promise(resolve => setTimeout(resolve, ms));
+
+  // If user is authenticated, redirect to dashboard
+  await delay(3000);
+  console.log(`Session details: ${util.inspect(session, { depth: null, colors: true })}`);
+  if (session?.user) {
+    redirect("/dashboard");
+  }
+
+  // If user is unauthenticated, redirect to login page
+  redirect("/login");
 }
